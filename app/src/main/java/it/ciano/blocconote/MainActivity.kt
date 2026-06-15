@@ -3,6 +3,7 @@ package it.ciano.blocconote
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,6 +41,7 @@ fun BloccoNoteApp() {
 
     var testoInput by remember { mutableStateOf("") }
     val listaNote by dao.getAllNotes().collectAsState(initial = emptyList())
+	var notaDaModificare by remember {mutableStateOf<Note?>(null)}
 
     Column(
         modifier = Modifier
@@ -63,47 +65,59 @@ fun BloccoNoteApp() {
 
         Button(
             onClick = {
-                if (testoInput.isNotBlank()) {
+				if (notaDaModificare != null && testoInput.isNotBlank()) { // <--- Aggiunto controllo vuoto
                     scope.launch {
-                        dao.insert(Note(testo = testoInput))
-                        testoInput = ""
+                    dao.insert(notaDaModificare!!.copy(testo = testoInput))
+                    testoInput = ""
+					notaDaModificare = null
                     }
-                }
+                }else if (testoInput.isNotBlank()) {
+                        scope.launch {
+                            dao.insert(Note(testo = testoInput))
+                            testoInput = ""
+                        }
+				}
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Aggiungi Nota")
+            Text(text = if (notaDaModificare == null) "Aggiungi Nota" else "Aggiorna")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {
-            items(listaNote) { nota ->
-                NoteItem(
-                    nota = nota,
-                    onDelete = { notaDaEliminare ->
-                        scope.launch {
-                            dao.delete(notaDaEliminare)
-                        }
-                    }
-                )
+            items(listaNote) { nota -> NoteItem(
+                               nota = nota,
+                               onDelete = { notaDaEliminare ->
+                                   scope.launch {
+                                   dao.delete(notaDaEliminare)
+                                   }
+                               },
+							   onEdit = { 
+								   notaSelezionata -> notaDaModificare = notaSelezionata
+								   testoInput = notaSelezionata.testo
+							   }
+							   )
             }
         }
     }
 }
 
 @Composable
-fun NoteItem(nota: Note, onDelete: (Note) -> Unit) {
+fun NoteItem(nota: Note,
+             onDelete: (Note) -> Unit,
+			 onEdit: (Note) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
+			.clickable {onEdit(nota)}
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = nota.testo,
