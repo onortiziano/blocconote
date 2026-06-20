@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.BorderStroke
+import it.ciano.blocconote.ui.theme.LocalAppColors
 
 
 class MainActivity : ComponentActivity() {
