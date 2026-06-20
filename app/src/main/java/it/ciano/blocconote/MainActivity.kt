@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,51 +40,76 @@ fun BloccoNoteApp() {
     val context = LocalContext.current
     val dao = NoteDatabase.getDatabase(context).noteDao()
     val scope = rememberCoroutineScope()
-
     var testoInput by remember { mutableStateOf("") }
     val listaNote by dao.getAllNotes().collectAsState(initial = emptyList())
     var notaDaModificare by remember { mutableStateOf<Note?>(null) }
+    var ricerca by remember { mutableStateOf("") }
+    var isSearching by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(20.dp)
     ) {
-        Text(
-            text = "Il mio Blocco Note",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        OutlinedTextField(
-            value = testoInput,
-            onValueChange = { nuovoTesto -> testoInput = nuovoTesto },
-            label = { Text("Scrivi una nota...") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = {
-                if (testoInput.isNotBlank()) {
-                    scope.launch {
-                        if (notaDaModificare != null) {
-                            // Aggiorna nota esistente
-                            dao.insert(notaDaModificare!!.copy(testo = testoInput))
-                            notaDaModificare = null
-                        } else {
-                            // Crea nuova nota
-                            dao.insert(Note(testo = testoInput))
-                        }
-                        testoInput = ""
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = if (notaDaModificare == null) "Aggiungi Nota" else "Aggiorna")
+            Text(
+                text = "Il mio blocco note",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            
+            IconButton(onClick = { isSearching = !isSearching }) { 
+                Icon(
+                    imageVector = if (isSearching) Icons.Default.Close else Icons.Default.Search, 
+                    contentDescription = "Cerca"
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (isSearching) {
+            // --- MODO RICERCA ---
+            TextField(
+                value = ricerca,
+                onValueChange = { ricerca = it },
+                label = { Text("Cerca tra le note...") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+        } else {
+            // --- MODO INSERIMENTO ---
+            OutlinedTextField(
+                value = testoInput,
+                onValueChange = { nuovoTesto -> testoInput = nuovoTesto },
+                label = { Text("Scrivi una nota...") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Button(
+                onClick = {
+                    if (testoInput.isNotBlank()) {
+                        scope.launch {
+                            if (notaDaModificare != null) {
+                                dao.insert(notaDaModificare!!.copy(testo = testoInput))
+                                notaDaModificare = null
+                            } else {
+                                dao.insert(Note(testo = testoInput))
+                            }
+                            testoInput = ""
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = if (notaDaModificare == null) "Aggiungi Nota" else "Aggiorna")
+            }
+        } // <--- CHIUSURA CORRETTA DEL BLOCCO ELSE (ora include il bottone)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -92,7 +118,7 @@ fun BloccoNoteApp() {
                 NoteItem(
                     index = index,
                     nota = nota,
-                    onDelete = { notaDaEliminare ->
+					onDelete = { notaDaEliminare ->
                         scope.launch {
                             dao.delete(notaDaEliminare)
                         }
@@ -105,7 +131,8 @@ fun BloccoNoteApp() {
             }
         }
     }
-}
+} 
+  
 
 @Composable
 fun NoteItem(
