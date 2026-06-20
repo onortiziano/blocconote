@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.BorderStroke
 
 
 class MainActivity : ComponentActivity() {
@@ -45,6 +46,15 @@ fun BloccoNoteApp() {
     var notaDaModificare by remember { mutableStateOf<Note?>(null) }
     var ricerca by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
+	val noteFiltrate = listaNote.filter {
+		it.testo.contains (ricerca, ignoreCase = true)
+	}
+	
+	val testoBottone = when {
+		isSearching -> "Cerca"
+		notaDaModificare == null -> "Aggiungi Nota"
+		else -> "salva"
+	}
 
     Column(
         modifier = Modifier
@@ -52,7 +62,7 @@ fun BloccoNoteApp() {
             .padding(20.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -61,7 +71,7 @@ fun BloccoNoteApp() {
                 style = MaterialTheme.typography.headlineMedium
             )
             
-            IconButton(onClick = { isSearching = !isSearching }) { 
+            IconButton(onClick = { isSearching = !isSearching; if (! isSearching) ricerca = ""}) { 
                 Icon(
                     imageVector = if (isSearching) Icons.Default.Close else Icons.Default.Search, 
                     contentDescription = "Cerca"
@@ -73,7 +83,7 @@ fun BloccoNoteApp() {
         
         if (isSearching) {
             // --- MODO RICERCA ---
-            TextField(
+            OutlinedTextField(
                 value = ricerca,
                 onValueChange = { ricerca = it },
                 label = { Text("Cerca tra le note...") },
@@ -89,7 +99,10 @@ fun BloccoNoteApp() {
                 modifier = Modifier.fillMaxWidth()
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
+        }
+		
+		// --- SPAZIO ---
+        Spacer(modifier = Modifier.height(16.dp))
             
             Button(
                 onClick = {
@@ -107,14 +120,13 @@ fun BloccoNoteApp() {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = if (notaDaModificare == null) "Aggiungi Nota" else "Aggiorna")
+                Text(text = testoBottone)
             }
-        } // <--- CHIUSURA CORRETTA DEL BLOCCO ELSE (ora include il bottone)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {
-            itemsIndexed(listaNote) { index, nota ->
+            itemsIndexed(noteFiltrate) { index, nota ->
                 NoteItem(
                     index = index,
                     nota = nota,
@@ -147,8 +159,10 @@ fun NoteItem(
             .padding(vertical = 4.dp)
             .clickable { onEdit(nota) },
         colors = CardDefaults.cardColors(
-            containerColor = if (index % 2 == 0) Color.White else Color.LightGray
-        )
+            containerColor = if (index % 2 == 0) Color (0xFFF6F6F6) else Color (0xFFDBDBDB)
+			
+        ),
+		border = BorderStroke(1.dp, Color(0xFFCCCCCC))
     ) {
         Row(
             modifier = Modifier
