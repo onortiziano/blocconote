@@ -49,11 +49,32 @@ fun BlocconoteTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+  } //  <-PER CASO MANCAVA QUESTA?
+	// 1. Scegliamo i colori in base al tema (dentro la funzione)
+    val zebra1 = if (darkTheme) DarkZebra1 else LightZebra1
+    val zebra2 = if (darkTheme) DarkZebra2 else LightZebra2
+    val border = if (darkTheme) DarkBorder else LightBorder
+	
+	
+	// 2. Avvolgiamo il MaterialTheme con il nostro Provider
+    CompositionLocalProvider(LocalAppColors provides AppColors(zebra1, zebra2, border)) {
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
+	
+
+// Questa è una piccola "classe" per trasportare i colori
+data class AppColors(
+    val zebra1: Color,
+    val zebra2: Color,
+    val border: Color
+)
+
+// Questo serve a rendere i colori accessibili in tutta l'app
+val LocalAppColors = staticCompositionLocalOf { 
+    AppColors(Color.White, Color.LightGray, Color.Gray) 
 }
-

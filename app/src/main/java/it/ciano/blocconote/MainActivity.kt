@@ -153,16 +153,19 @@ fun NoteItem(
     onDelete: (Note) -> Unit,
 	onEdit: (Note) -> Unit
 ) {
+	val appColors = LocalAppColors.current
+	
+	
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable { onEdit(nota) },
         colors = CardDefaults.cardColors(
-            containerColor = if (index % 2 == 0) Color (0xFFF6F6F6) else Color (0xFFDBDBDB)
+            containerColor = if (index % 2 == 0) Color (appColors.zebra1) else Color (appColors.zebra2)
 			
         ),
-		border = BorderStroke(1.dp, Color(0xFFCCCCCC))
+		border = BorderStroke(1.dp, Color(appColors.border))
     ) {
         Row(
             modifier = Modifier
