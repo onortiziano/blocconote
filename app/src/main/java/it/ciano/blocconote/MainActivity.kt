@@ -19,13 +19,16 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.BorderStroke
 import it.ciano.blocconote.ui.theme.LocalAppColors
+import it.ciano.blocconote.ui.theme.BlocconoteTheme
+import androidx.activity.enableEdgeToEdge
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+		enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            BlocconoteTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -163,10 +166,10 @@ fun NoteItem(
             .padding(vertical = 4.dp)
             .clickable { onEdit(nota) },
         colors = CardDefaults.cardColors(
-            containerColor = if (index % 2 == 0) Color (appColors.zebra1) else Color (appColors.zebra2)
+            containerColor = if (index % 2 == 0) appColors.zebra1 else appColors.zebra2
 			
         ),
-		border = BorderStroke(1.dp, Color(appColors.border))
+		border = BorderStroke(1.dp, appColors.border)
     ) {
         Row(
             modifier = Modifier
